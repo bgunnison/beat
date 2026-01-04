@@ -1,0 +1,9 @@
+build/
+.vs/
+*.user
+*.suo
+*.vcxproj.user
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+*~

@@ -1,0 +1,669 @@
+{
+	"vstgui-ui-description": {
+		"version": "1",
+		"bitmaps": {},
+		"fonts": {
+			"Default": {
+				"font-name": "Arial",
+				"size": "11"
+			},
+			"Title": {
+				"bold": "true",
+				"font-name": "Arial",
+				"size": "16"
+			},
+			"Version": {
+				"bold": "true",
+				"font-name": "Arial",
+				"size": "12"
+			}
+		},
+		"colors": {
+			"Background": "32, 32, 32, 255",
+			"Text": "220, 220, 220, 255"
+		},
+		"gradients": {
+			"Default TextButton Gradient": [
+				{
+					"rgba": "#dcdcdcff",
+					"start": "0"
+				},
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "1"
+				}
+			],
+			"Default TextButton Gradient Highlighted": [
+				{
+					"rgba": "#b4b4b4ff",
+					"start": "0"
+				},
+				{
+					"rgba": "#646464ff",
+					"start": "1"
+				}
+			]
+		},
+		"control-tags": {
+			"Generator1::Bars": "3",
+			"Generator1::Beats": "5",
+			"Generator1::Loop": "4",
+			"Generator1::Loud": "9",
+			"Generator1::NoteIndex": "7",
+			"Generator1::Octave": "8",
+			"Generator1::Rotate": "6",
+			"Generator2::Bars": "10",
+			"Generator2::Beats": "12",
+			"Generator2::Loop": "11",
+			"Generator2::Loud": "16",
+			"Generator2::NoteIndex": "14",
+			"Generator2::Octave": "15",
+			"Generator2::Rotate": "13",
+			"Generator3::Bars": "17",
+			"Generator3::Beats": "19",
+			"Generator3::Loop": "18",
+			"Generator3::Loud": "23",
+			"Generator3::NoteIndex": "21",
+			"Generator3::Octave": "22",
+			"Generator3::Rotate": "20",
+			"Generator4::Bars": "24",
+			"Generator4::Beats": "26",
+			"Generator4::Loop": "25",
+			"Generator4::Loud": "30",
+			"Generator4::NoteIndex": "28",
+			"Generator4::Octave": "29",
+			"Generator4::Rotate": "27",
+			"Generator5::Bars": "31",
+			"Generator5::Beats": "33",
+			"Generator5::Loop": "32",
+			"Generator5::Loud": "37",
+			"Generator5::NoteIndex": "35",
+			"Generator5::Octave": "36",
+			"Generator5::Rotate": "34",
+			"Generator6::Bars": "38",
+			"Generator6::Beats": "40",
+			"Generator6::Loop": "39",
+			"Generator6::Loud": "44",
+			"Generator6::NoteIndex": "42",
+			"Generator6::Octave": "43",
+			"Generator6::Rotate": "41",
+			"Generator7::Bars": "45",
+			"Generator7::Beats": "47",
+			"Generator7::Loop": "46",
+			"Generator7::Loud": "51",
+			"Generator7::NoteIndex": "49",
+			"Generator7::Octave": "50",
+			"Generator7::Rotate": "48",
+			"Generator8::Bars": "52",
+			"Generator8::Beats": "54",
+			"Generator8::Loop": "53",
+			"Generator8::Loud": "58",
+			"Generator8::NoteIndex": "56",
+			"Generator8::Octave": "57",
+			"Generator8::Rotate": "55",
+			"Root::BeatSelect": "1",
+			"Root::EffectEnabled": "0",
+			"Root::Reset": "2"
+		},
+		"custom": {
+			"FocusDrawing": {},
+			"VST3Editor": {
+				"Path": "C:\\ProgramData\\vstplugins\\Beat.vst3\\Contents\\Resources\\beat.uidesc"
+			},
+			"UIGridController": {
+				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15"
+			},
+			"UIEditController": {
+				"EditViewScale": "1.5",
+				"EditorSize": "0, 0, 1803, 828",
+				"SplitViewSize_0_0": "0.8379052369077306661182547031785361468792",
+				"SplitViewSize_0_1": "0.1371571072319202055922460203873924911022",
+				"SplitViewSize_1_0": "0.4837905236907730777140557165694190189242",
+				"SplitViewSize_1_1": "0.5099750623441396957247206955798901617527",
+				"SplitViewSize_2_0": "0.6322795341098169652482852143293712288141",
+				"SplitViewSize_2_1": "0.364947310038824190847606132592773064971",
+				"TabSwitchValue": "0",
+				"Version": "1"
+			},
+			"UITemplateController": {
+				"SelectedTemplate": "view"
+			},
+			"UIAttributesController": {},
+			"UIViewCreatorDataSource": {
+				"SelectedRow": "23"
+			}
+		},
+		"templates": {
+			"view": {
+				"attributes": {
+					"background-color": "Background",
+					"background-color-draw-style": "filled and stroked",
+					"class": "CViewContainer",
+					"mouse-enabled": "true",
+					"opacity": "1",
+					"origin": "0, 0",
+					"size": "500, 250",
+					"transparent": "false",
+					"wants-focus": "false"
+				},
+				"children": {
+					"CViewContainer": {
+						"attributes": {
+							"background-color": "~ BlueCColor",
+							"background-color-draw-style": "filled and stroked",
+							"class": "CViewContainer",
+							"mouse-enabled": "true",
+							"opacity": "1",
+							"origin": "0, 10",
+							"size": "500, 240",
+							"transparent": "false",
+							"wants-focus": "false"
+						},
+						"children": {
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Title",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 10",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "460, 24",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Beat MIDI Generator v0.1.0 (2026-01-03 10:47)",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CCheckBox": {
+								"attributes": {
+									"autosize-to-fit": "false",
+									"boxfill-color": "Background",
+									"boxframe-color": "~ BlackCColor",
+									"checkmark-color": "~ RedCColor",
+									"class": "CCheckBox",
+									"control-tag": "Root::EffectEnabled",
+									"draw-crossbox": "false",
+									"font": "Default",
+									"font-color": "Text",
+									"frame-width": "1",
+									"opacity": "1",
+									"origin": "40, 35",
+									"round-rect-radius": "0",
+									"size": "70, 20",
+									"title": "Effect On",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextButton": {
+								"attributes": {
+									"class": "CTextButton",
+									"control-tag": "Root::Reset",
+									"font": "Default",
+									"frame-color": "~ BlackCColor",
+									"frame-color-highlighted": "~ BlackCColor",
+									"frame-width": "1",
+									"gradient": "Default TextButton Gradient",
+									"gradient-highlighted": "Default TextButton Gradient Highlighted",
+									"icon-position": "left",
+									"icon-text-margin": "0",
+									"kick-style": "true",
+									"opacity": "1",
+									"origin": "130, 35",
+									"round-radius": "6",
+									"size": "50, 20",
+									"text-alignment": "center",
+									"text-color": "~ BlackCColor",
+									"text-color-highlighted": "Background",
+									"title": "Reset",
+									"transparent": "false",
+									"wants-focus": "true",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 60",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "80, 28",
+									"style-3D-in": "true",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Beat Select",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 95",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Bars",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "90, 95",
+									"size": "360, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 125",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Loop",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "90, 125",
+									"size": "360, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 155",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Beats",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "90, 155",
+									"size": "360, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 185",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Rotate",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "90, 185",
+									"size": "360, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "20, 215",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Note",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "90, 215",
+									"size": "110, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "210, 215",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Oct",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "270, 215",
+									"size": "80, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CTextLabel": {
+								"attributes": {
+									"back-color": "~ BlackCColor",
+									"background-offset": "0, 0",
+									"class": "CTextLabel",
+									"default-value": "0.5",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ BlackCColor",
+									"frame-width": "1",
+									"max-value": "1",
+									"min-value": "0",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "360, 215",
+									"round-rect-radius": "6",
+									"shadow-color": "~ RedCColor",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "false",
+									"style-no-text": "false",
+									"style-round-rect": "false",
+									"style-shadow-text": "false",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "1, 1",
+									"title": "Loud",
+									"transparent": "false",
+									"value-precision": "2",
+									"wants-focus": "false",
+									"wheel-inc-value": "0.1"
+								}
+							},
+							"CViewContainer": {
+								"attributes": {
+									"background-color": "~ BlackCColor",
+									"background-color-draw-style": "filled and stroked",
+									"class": "CViewContainer",
+									"mouse-enabled": "true",
+									"opacity": "1",
+									"origin": "420, 215",
+									"size": "60, 18",
+									"transparent": "false",
+									"wants-focus": "false"
+								}
+							},
+							"CSlider": {
+								"attributes": {
+									"bitmap-offset": "0, 0",
+									"class": "CSlider",
+									"control-tag": "Root::BeatSelect",
+									"draw-back": "true",
+									"draw-back-color": "~ BlackCColor",
+									"draw-frame": "true",
+									"draw-frame-color": "~ GreyCColor",
+									"draw-value": "true",
+									"draw-value-color": "~ BlueCColor",
+									"draw-value-from-center": "false",
+									"draw-value-inverted": "false",
+									"frame-width": "1",
+									"handle-offset": "0, 0",
+									"mode": "use global",
+									"opacity": "1",
+									"orientation": "horizontal",
+									"origin": "110, 60",
+									"reverse-orientation": "false",
+									"size": "340, 30",
+									"transparent": "false",
+									"uidesc-label": "Beat Selector",
+									"wants-focus": "true",
+									"wheel-inc-value": "1",
+									"zoom-factor": "10"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
