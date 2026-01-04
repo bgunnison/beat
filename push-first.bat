@@ -21,7 +21,7 @@ git add -A
 git commit -m "First working version" >nul 2>&1
 
 git branch -M %BRANCH%
-git push -u origin %BRANCH%
+git push -u origin %BRANCH% --force
 
 pause
 endlocal
