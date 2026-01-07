@@ -31,17 +31,12 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     resetParam->setPrecision(0);
     parameters.addParameter(resetParam);
 
-    UnitID activeUnitId = static_cast<UnitID>(kMaxBeats + 1);
-    String128 activeUnitName{};
-    UString(activeUnitName, str16BufferSize(String128)).fromAscii("Selected Beat");
-    addUnit(new Unit(activeUnitName, activeUnitId));
-
     auto addActiveParam = [&](const std::string& label, ParamID id, double min, double max, double def, int precision) {
         String128 title{};
         UString(title, str16BufferSize(String128)).fromAscii(label.c_str());
         auto* p = new RangeParameter(title, id, nullptr, min, max, def);
         p->setPrecision(precision);
-        p->setUnitID(activeUnitId);
+        p->getInfo().flags |= ParameterInfo::kIsHidden;
         parameters.addParameter(p);
     };
 
@@ -50,8 +45,8 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     addActiveParam("Beats", activeParamId(ActiveParamSlot::kActiveBeats), 0, kMaxLoopLength, 4, 0);
     addActiveParam("Rotate", activeParamId(ActiveParamSlot::kActiveRotate), 0, kMaxLoopLength, 0, 0);
     addActiveParam("NoteIndex", activeParamId(ActiveParamSlot::kActiveNoteIndex), 0, 11, 0, 0);
-    addActiveParam("Octave", activeParamId(ActiveParamSlot::kActiveOctave), kMinOctave, kMaxOctave, 4, 0);
-    addActiveParam("Loud", activeParamId(ActiveParamSlot::kActiveLoud), 0, 127, 127, 0);
+    addActiveParam("Octave", activeParamId(ActiveParamSlot::kActiveOctave), kMinOctave, kMaxOctave, 2, 0);
+    addActiveParam("Loud", activeParamId(ActiveParamSlot::kActiveLoud), 0, 127, 0, 0);
 
     auto addBeatParam = [&](int beat, const std::string& label, ParamID id, double min, double max, double def, int precision, UnitID unitId) {
         String128 title{};
@@ -63,19 +58,26 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     };
 
     for (int b = 0; b < kMaxBeats; ++b) {
-        // Create a Unit for each generator to group parameters in the host
-        UnitID unitId = static_cast<UnitID>(b + 1);
-        String128 unitName{};
-        UString(unitName, str16BufferSize(String128)).fromAscii(("Generator " + std::to_string(b + 1)).c_str());
-        addUnit(new Unit(unitName, unitId));
+        addBeatParam(b, "Bars", beatParamId(b, BeatParamSlot::kSlotBars), 1, kMaxLoopLength, 4, 0, kRootUnitId);
+        addBeatParam(b, "Loop", beatParamId(b, BeatParamSlot::kSlotLoop), 1, kMaxLoopLength, 16, 0, kRootUnitId);
+        addBeatParam(b, "Beats", beatParamId(b, BeatParamSlot::kSlotBeats), 0, kMaxLoopLength, 4, 0, kRootUnitId);
+        addBeatParam(b, "Rotate", beatParamId(b, BeatParamSlot::kSlotRotate), 0, kMaxLoopLength, 0, 0, kRootUnitId);
+        addBeatParam(b, "NoteIndex", beatParamId(b, BeatParamSlot::kSlotNoteIndex), 0, 11, b % 12, 0, kRootUnitId);
+        addBeatParam(b, "Octave", beatParamId(b, BeatParamSlot::kSlotOctave), kMinOctave, kMaxOctave, 2, 0, kRootUnitId);
+        addBeatParam(b, "Loud", beatParamId(b, BeatParamSlot::kSlotLoud), 0, 127, 0, 0, kRootUnitId);
 
-        addBeatParam(b, "Bars", beatParamId(b, BeatParamSlot::kSlotBars), 1, kMaxLoopLength, 4, 0, unitId);
-        addBeatParam(b, "Loop", beatParamId(b, BeatParamSlot::kSlotLoop), 1, kMaxLoopLength, 16, 0, unitId);
-        addBeatParam(b, "Beats", beatParamId(b, BeatParamSlot::kSlotBeats), 0, kMaxLoopLength, 4, 0, unitId);
-        addBeatParam(b, "Rotate", beatParamId(b, BeatParamSlot::kSlotRotate), 0, kMaxLoopLength, 0, 0, unitId);
-        addBeatParam(b, "NoteIndex", beatParamId(b, BeatParamSlot::kSlotNoteIndex), 0, 11, 0, 0, unitId);
-        addBeatParam(b, "Octave", beatParamId(b, BeatParamSlot::kSlotOctave), kMinOctave, kMaxOctave, 4, 0, unitId);
-        addBeatParam(b, "Loud", beatParamId(b, BeatParamSlot::kSlotLoud), 0, 127, 127, 0, unitId);
+        auto* laneMute = new RangeParameter(STR16("Lane Mute"), laneMuteParamId(b), nullptr, 0.0, 1.0, 0.0);
+        laneMute->setPrecision(0);
+        parameters.addParameter(laneMute);
+
+        auto* laneSolo = new RangeParameter(STR16("Lane Solo"), laneSoloParamId(b), nullptr, 0.0, 1.0, 0.0);
+        laneSolo->setPrecision(0);
+        parameters.addParameter(laneSolo);
+
+        auto* laneActivity = new RangeParameter(STR16("Lane Activity"), laneActivityParamId(b), nullptr, 0.0, 1.0, 0.0);
+        laneActivity->setPrecision(0);
+        laneActivity->getInfo().flags = ParameterInfo::kIsReadOnly;
+        parameters.addParameter(laneActivity);
     }
 
     buildParamOrder();
@@ -123,6 +125,11 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
             const ParamID perBeatId = beatParamId(beatIndex, slot);
             syncingActive_ = true;
             EditControllerEx1::setParamNormalized(perBeatId, value);
+            if (componentHandler) {
+                componentHandler->beginEdit(perBeatId);
+                componentHandler->performEdit(perBeatId, value);
+                componentHandler->endEdit(perBeatId);
+            }
             syncingActive_ = false;
         }
         return res;
@@ -204,6 +211,8 @@ void BeatController::buildParamOrder() {
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotNoteIndex));
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotOctave));
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotLoud));
+        paramOrder_.push_back(laneMuteParamId(b));
+        paramOrder_.push_back(laneSoloParamId(b));
     }
 }
 
@@ -212,7 +221,28 @@ ParamValue BeatController::defaultNormalized(ParamID pid) const {
     if (pid == ParamIDs::kParamBeatSelect) return 0.0;
 
     if (pid < kParamBaseBeatParams) return 0.0;
+
+    if (pid >= kActiveParamBase && pid < kLaneMuteBase) {
+        int slot = static_cast<int>(pid - kActiveParamBase);
+        switch (slot) {
+            case ActiveParamSlot::kActiveBars: return (4.0 - 1.0) / (kMaxLoopLength - 1.0);
+            case ActiveParamSlot::kActiveLoop: return (16.0 - 1.0) / (kMaxLoopLength - 1.0);
+            case ActiveParamSlot::kActiveBeats: return 4.0 / kMaxLoopLength;
+            case ActiveParamSlot::kActiveRotate: return 0.0;
+            case ActiveParamSlot::kActiveNoteIndex: return 0.0;
+            case ActiveParamSlot::kActiveOctave: return (2.0 - kMinOctave) / (kMaxOctave - kMinOctave);
+            case ActiveParamSlot::kActiveLoud: return 0.0;
+            default: break;
+        }
+        return 0.0;
+    }
+
+    if (pid >= kLaneMuteBase && pid < kLaneSoloBase) return 0.0;
+    if (pid >= kLaneSoloBase && pid < kLaneActivityBase) return 0.0;
+    if (pid >= kLaneActivityBase) return 0.0;
+
     int rel = static_cast<int>(pid - kParamBaseBeatParams);
+    int beatIndex = rel / kPerBeatParams;
     int slot = rel % kPerBeatParams;
 
     switch (slot) {
@@ -220,9 +250,9 @@ ParamValue BeatController::defaultNormalized(ParamID pid) const {
         case BeatParamSlot::kSlotLoop: return (16.0 - 1.0) / (kMaxLoopLength - 1.0);
         case BeatParamSlot::kSlotBeats: return 4.0 / kMaxLoopLength;
         case BeatParamSlot::kSlotRotate: return 0.0;
-        case BeatParamSlot::kSlotNoteIndex: return 0.0;
-        case BeatParamSlot::kSlotOctave: return (4.0 - kMinOctave) / (kMaxOctave - kMinOctave);
-        case BeatParamSlot::kSlotLoud: return 1.0;
+        case BeatParamSlot::kSlotNoteIndex: return static_cast<ParamValue>(beatIndex % 12) / 11.0;
+        case BeatParamSlot::kSlotOctave: return (2.0 - kMinOctave) / (kMaxOctave - kMinOctave);
+        case BeatParamSlot::kSlotLoud: return 0.0;
         default: break;
     }
     return 0.0;

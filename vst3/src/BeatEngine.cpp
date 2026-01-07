@@ -64,6 +64,7 @@ uint8_t noteIndexToMidi(int octave, int noteIndex) {
 }
 
 Beat::Beat(int index) : index_(index) {
+    params_.noteIndex = index_ % kNotesCount;
     rebuildNotes();
     rebuildPattern();
 }
@@ -144,7 +145,8 @@ void Beat::tick(int globalTick, std::vector<BeatEvent>& out) {
     if (updateNotes_) rebuildNotes();
     if (updatePattern_) rebuildPattern();
 
-    if (mute_) {
+    const bool effectiveMute = mute_ || externalMute_;
+    if (effectiveMute) {
         if (!muted_) {
             muted_ = true;
             BeatEvent ev{index_, noteOff_, 0, false};
@@ -152,6 +154,7 @@ void Beat::tick(int globalTick, std::vector<BeatEvent>& out) {
         }
         return;
     }
+    muted_ = false;
 
     if (offTick_ != 0 && globalTick >= offTick_) {
         BeatEvent ev{index_, noteOff_, 0, false};
@@ -188,10 +191,26 @@ void BeatEngine::setBeatParam(const char* name, int value) {
     beats_[static_cast<size_t>(selected_)].setParam(name, value);
 }
 
+void BeatEngine::setLaneMute(int beatIndex, bool muted) {
+    if (beatIndex < 0 || beatIndex >= kMaxBeats) return;
+    laneMute_[static_cast<size_t>(beatIndex)] = muted;
+}
+
+void BeatEngine::setLaneSolo(int beatIndex, bool solo) {
+    if (beatIndex < 0 || beatIndex >= kMaxBeats) return;
+    laneSolo_[static_cast<size_t>(beatIndex)] = solo;
+    anySolo_ = false;
+    for (bool s : laneSolo_) {
+        if (s) { anySolo_ = true; break; }
+    }
+}
+
 void BeatEngine::processTick(int globalTick, std::vector<BeatEvent>& out) {
     if (muted_) return;
-    for (auto& b : beats_) {
-        b.tick(globalTick, out);
+    for (int i = 0; i < kMaxBeats; ++i) {
+        const bool soloGate = anySolo_ && !laneSolo_[static_cast<size_t>(i)];
+        beats_[static_cast<size_t>(i)].setExternalMute(laneMute_[static_cast<size_t>(i)] || soloGate);
+        beats_[static_cast<size_t>(i)].tick(globalTick, out);
     }
 }
 

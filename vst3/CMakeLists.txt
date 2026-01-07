@@ -67,12 +67,22 @@ target_link_libraries(Beat PRIVATE
 
 target_compile_definitions(Beat PRIVATE
     $<$<CONFIG:Debug>:VSTGUI_LIVE_EDITING=1>
+    $<$<CONFIG:Debug>:BEAT_DEBUG_NAME>
+    $<$<CONFIG:Debug>:BEAT_DEBUG_UIDS>
+)
+
+set_target_properties(Beat PROPERTIES
+    OUTPUT_NAME "Beat"
+    OUTPUT_NAME_DEBUG "DebugBeat"
+    OUTPUT_NAME_RELEASE "Beat"
+    OUTPUT_NAME_RELWITHDEBINFO "Beat"
+    OUTPUT_NAME_MINSIZEREL "Beat"
 )
 
 set(BEAT_UIDESC_TEMPLATE ${CMAKE_CURRENT_SOURCE_DIR}/beat.uidesc.in)
 set(BEAT_UIDESC_GENERATED ${CMAKE_CURRENT_BINARY_DIR}/beat.uidesc)
 set(BEAT_BUNDLE_UIDESC "C:/ProgramData/vstplugins/Beat.vst3/Contents/Resources/beat.uidesc" CACHE STRING "Path to installed Beat.vst3 UIDesc")
-option(BEAT_IMPORT_UIDESC_ON_BUILD "Import edited UI from installed plugin bundle" ON)
+option(BEAT_IMPORT_UIDESC_ON_BUILD "Import edited UI from installed plugin bundle" OFF)
 
 add_custom_target(BeatUIDescImport
     COMMAND ${CMAKE_COMMAND}

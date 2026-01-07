@@ -15,6 +15,19 @@ namespace beatvst {
 using namespace Steinberg;
 using namespace Steinberg::Vst;
 
+namespace {
+
+void addOutputParamChange(IParameterChanges* changes, ParamID pid, ParamValue value, int32 sampleOffset) {
+    if (!changes) return;
+    int32 index = 0;
+    IParamValueQueue* queue = changes->addParameterData(pid, index);
+    if (!queue) return;
+    int32 pointIndex = 0;
+    queue->addPoint(sampleOffset, value, pointIndex);
+}
+
+} // namespace
+
 BeatProcessor::BeatProcessor() {
     setControllerClass(kBeatControllerUID);
     setProcessing(true);
@@ -81,8 +94,34 @@ void BeatProcessor::applyNormalizedParam(ParamID pid, ParamValue value) {
         return;
     }
 
+    if (pid >= kLaneMuteBase && pid < kLaneSoloBase) {
+        int beatIndex = static_cast<int>(pid - kLaneMuteBase);
+        if (beatIndex >= 0 && beatIndex < kMaxBeats) {
+            const bool muted = value > 0.5;
+            laneMute_[static_cast<size_t>(beatIndex)] = muted;
+            engine_.setLaneMute(beatIndex, muted);
+            paramState_[pid] = muted ? 1.0 : 0.0;
+        }
+        return;
+    }
+
+    if (pid >= kLaneSoloBase && pid < kLaneActivityBase) {
+        int beatIndex = static_cast<int>(pid - kLaneSoloBase);
+        if (beatIndex >= 0 && beatIndex < kMaxBeats) {
+            const bool solo = value > 0.5;
+            laneSolo_[static_cast<size_t>(beatIndex)] = solo;
+            engine_.setLaneSolo(beatIndex, solo);
+            paramState_[pid] = solo ? 1.0 : 0.0;
+        }
+        return;
+    }
+
     int beatIndex = -1;
     int slot = -1;
+    if (pid >= kActiveParamBase && pid < kActiveParamBase + kPerBeatParams) {
+        return;
+    }
+
     if (pid >= kParamBaseBeatParams && pid < kActiveParamBase) {
         int rel = static_cast<int>(pid - kParamBaseBeatParams);
         beatIndex = rel / kPerBeatParams;
@@ -125,6 +164,18 @@ void BeatProcessor::handleParameterChanges(ProcessData& data) {
         IParamValueQueue* queue = data.inputParameterChanges->getParameterData(i);
         if (!queue) continue;
         ParamID pid = queue->getParameterId();
+        if (pid != ParamIDs::kParamBeatSelect) continue;
+        int32 points = queue->getPointCount();
+        ParamValue value = 0;
+        int32 offset = 0;
+        queue->getPoint(points - 1, offset, value);
+        applyNormalizedParam(pid, value);
+    }
+    for (int32 i = 0; i < count; ++i) {
+        IParamValueQueue* queue = data.inputParameterChanges->getParameterData(i);
+        if (!queue) continue;
+        ParamID pid = queue->getParameterId();
+        if (pid == ParamIDs::kParamBeatSelect) continue;
         int32 points = queue->getPointCount();
         ParamValue value = 0;
         int32 offset = 0;
@@ -134,11 +185,31 @@ void BeatProcessor::handleParameterChanges(ProcessData& data) {
 }
 
 ParamValue BeatProcessor::defaultNormalized(ParamID pid) const {
-    if (pid == ParamIDs::kParamEffectEnabled) return 1.0;
+    if (pid == ParamIDs::kParamEffectEnabled) return 0.0;
     if (pid == ParamIDs::kParamBeatSelect) return 0.0;
     if (pid < kParamBaseBeatParams) return 0.0;
 
+    if (pid >= kActiveParamBase && pid < kLaneMuteBase) {
+        int slot = static_cast<int>(pid - kActiveParamBase);
+        switch (slot) {
+            case ActiveParamSlot::kActiveBars: return (4.0 - 1.0) / (kMaxLoopLength - 1.0);
+            case ActiveParamSlot::kActiveLoop: return (16.0 - 1.0) / (kMaxLoopLength - 1.0);
+            case ActiveParamSlot::kActiveBeats: return 4.0 / kMaxLoopLength;
+            case ActiveParamSlot::kActiveRotate: return 0.0;
+            case ActiveParamSlot::kActiveNoteIndex: return 0.0;
+            case ActiveParamSlot::kActiveOctave: return (2.0 - kMinOctave) / (kMaxOctave - kMinOctave);
+            case ActiveParamSlot::kActiveLoud: return 0.0;
+            default: break;
+        }
+        return 0.0;
+    }
+
+    if (pid >= kLaneMuteBase && pid < kLaneSoloBase) return 0.0;
+    if (pid >= kLaneSoloBase && pid < kLaneActivityBase) return 0.0;
+    if (pid >= kLaneActivityBase) return 0.0;
+
     int rel = static_cast<int>(pid - kParamBaseBeatParams);
+    int beatIndex = rel / kPerBeatParams;
     int slot = rel % kPerBeatParams;
 
     switch (slot) {
@@ -146,9 +217,9 @@ ParamValue BeatProcessor::defaultNormalized(ParamID pid) const {
         case BeatParamSlot::kSlotLoop: return (16.0 - 1.0) / (kMaxLoopLength - 1.0);
         case BeatParamSlot::kSlotBeats: return 4.0 / kMaxLoopLength;
         case BeatParamSlot::kSlotRotate: return 0.0;
-        case BeatParamSlot::kSlotNoteIndex: return 0.0;
-        case BeatParamSlot::kSlotOctave: return (4.0 - kMinOctave) / (kMaxOctave - kMinOctave);
-        case BeatParamSlot::kSlotLoud: return 1.0;
+        case BeatParamSlot::kSlotNoteIndex: return static_cast<ParamValue>(beatIndex % 12) / 11.0;
+        case BeatParamSlot::kSlotOctave: return (2.0 - kMinOctave) / (kMaxOctave - kMinOctave);
+        case BeatParamSlot::kSlotLoud: return 0.0;
         default: break;
     }
     return 0.0;
@@ -160,6 +231,8 @@ void BeatProcessor::resetToDefaults() {
     }
     sampleRemainder_ = 0.0;
     globalTick_ = 0;
+    activityCountdown_.fill(0);
+    lastActivityValue_.fill(0.0);
 }
 
 void BeatProcessor::syncEngineFromParams() {
@@ -178,20 +251,14 @@ void BeatProcessor::buildParamOrder() {
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotNoteIndex));
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotOctave));
         paramOrder_.push_back(beatParamId(b, BeatParamSlot::kSlotLoud));
+        paramOrder_.push_back(laneMuteParamId(b));
+        paramOrder_.push_back(laneSoloParamId(b));
     }
 
     // Seed defaults so save/restore matches initial behavior.
     paramState_.clear();
-    paramState_[ParamIDs::kParamEffectEnabled] = 0.0;
-    paramState_[ParamIDs::kParamBeatSelect] = 0.0;
-    for (int b = 0; b < kMaxBeats; ++b) {
-        paramState_[beatParamId(b, BeatParamSlot::kSlotBars)] = (4.0 - 1.0) / (kMaxLoopLength - 1.0);
-        paramState_[beatParamId(b, BeatParamSlot::kSlotLoop)] = (16.0 - 1.0) / (kMaxLoopLength - 1.0);
-        paramState_[beatParamId(b, BeatParamSlot::kSlotBeats)] = 4.0 / kMaxLoopLength;
-        paramState_[beatParamId(b, BeatParamSlot::kSlotRotate)] = 0.0;
-        paramState_[beatParamId(b, BeatParamSlot::kSlotNoteIndex)] = 0.0;
-        paramState_[beatParamId(b, BeatParamSlot::kSlotOctave)] = (4.0 - kMinOctave) / (kMaxOctave - kMinOctave);
-        paramState_[beatParamId(b, BeatParamSlot::kSlotLoud)] = 1.0;
+    for (auto pid : paramOrder_) {
+        paramState_[pid] = defaultNormalized(pid);
     }
 }
 
@@ -272,6 +339,9 @@ tresult PLUGIN_API BeatProcessor::process(ProcessData& data) {
                 e.noteOn.pitch = ev.note;
                 e.noteOn.velocity = ev.velocity / 127.f;
                 e.noteOn.length = 0;
+                if (ev.beatIndex >= 0 && ev.beatIndex < kMaxBeats) {
+                    activityCountdown_[static_cast<size_t>(ev.beatIndex)] = 2;
+                }
             } else {
                 e.type = Event::kNoteOffEvent;
                 e.noteOff.channel = 0;
@@ -279,6 +349,18 @@ tresult PLUGIN_API BeatProcessor::process(ProcessData& data) {
                 e.noteOff.velocity = 0.0f;
             }
             outEvents->addEvent(e);
+        }
+
+        for (int i = 0; i < kMaxBeats; ++i) {
+            double activityValue = 0.0;
+            if (activityCountdown_[static_cast<size_t>(i)] > 0) {
+                activityCountdown_[static_cast<size_t>(i)] -= 1;
+                activityValue = 1.0;
+            }
+            if (activityValue != lastActivityValue_[static_cast<size_t>(i)]) {
+                addOutputParamChange(data.outputParameterChanges, laneActivityParamId(i), activityValue, sampleOffset);
+                lastActivityValue_[static_cast<size_t>(i)] = activityValue;
+            }
         }
 
         samplesUntilTick = samplesPerTick_;

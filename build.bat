@@ -11,18 +11,14 @@ if "%VST3_SDK_ROOT%"=="" (
 
 if not exist "%ROOT%build" mkdir "%ROOT%build"
 
-cmake -S "%ROOT%vst3" -B "%ROOT%build"
+cmake -S "%ROOT%vst3" -B "%ROOT%build" -DBEAT_IMPORT_UIDESC_ON_BUILD=OFF
+if errorlevel 1 goto :done
+
+cmake --build "%ROOT%build" --config Debug
 if errorlevel 1 goto :done
 
 cmake --build "%ROOT%build" --config Release
 if errorlevel 1 goto :done
-
-if exist "%ROOT%build\VST3\Release\Beat.vst3" (
-  if not exist "C:\ProgramData\vstplugins" mkdir "C:\ProgramData\vstplugins"
-  robocopy "%ROOT%build\VST3\Release\Beat.vst3" "C:\ProgramData\vstplugins\Beat.vst3" /E /NFL /NDL /NJH /NJS /NC /NS
-  set RC=%ERRORLEVEL%
-  if %RC% GEQ 8 goto :done
-)
 
 :done
 pause

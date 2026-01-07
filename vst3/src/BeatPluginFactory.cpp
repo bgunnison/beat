@@ -4,7 +4,11 @@
 
 #include "public.sdk/source/main/pluginfactory.h"
 
-#define stringPluginName "Beat MIDI Generator"
+#ifdef BEAT_DEBUG_NAME
+#define stringPluginName "Debug Beat"
+#else
+#define stringPluginName "Beat"
+#endif
 
 using namespace beatvst;
 using namespace Steinberg;

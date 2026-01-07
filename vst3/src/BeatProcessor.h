@@ -4,6 +4,7 @@
 #include "BeatIDs.h"
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
+#include <array>
 #include <unordered_map>
 
 namespace beatvst {
@@ -46,6 +47,10 @@ protected:
     std::vector<Steinberg::Vst::ParamID> paramOrder_;
     int currentSelected_{1};
     std::unordered_map<Steinberg::Vst::ParamID, double> paramState_;
+    std::array<bool, kMaxBeats> laneMute_{};
+    std::array<bool, kMaxBeats> laneSolo_{};
+    std::array<int, kMaxBeats> activityCountdown_{};
+    std::array<double, kMaxBeats> lastActivityValue_{};
 };
 
 } // namespace beatvst
