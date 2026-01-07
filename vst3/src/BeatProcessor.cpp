@@ -72,6 +72,7 @@ void BeatProcessor::applyNormalizedParam(ParamID pid, ParamValue value) {
 
     if (pid == ParamIDs::kParamEffectEnabled) {
         paramState_[pid] = value;
+        engine_.setMuted(value > 0.5);
         return;
     }
 
@@ -103,7 +104,7 @@ void BeatProcessor::applyNormalizedParam(ParamID pid, ParamValue value) {
         case BeatParamSlot::kSlotLoop: name = "Loop"; min = 1; max = kMaxLoopLength; break;
         case BeatParamSlot::kSlotBeats: name = "Beats"; min = 0; max = kMaxLoopLength; break;
         case BeatParamSlot::kSlotRotate: name = "Rotate"; min = 0; max = kMaxLoopLength; break;
-        case BeatParamSlot::kSlotNoteIndex: name = "Note"; min = 0; max = 11; break;
+        case BeatParamSlot::kSlotNoteIndex: name = "NoteIndex"; min = 0; max = 11; break;
         case BeatParamSlot::kSlotOctave: name = "Octave"; min = kMinOctave; max = kMaxOctave; break;
         case BeatParamSlot::kSlotLoud: name = "Loud"; min = 0; max = 127; break;
         default: break;
@@ -181,7 +182,7 @@ void BeatProcessor::buildParamOrder() {
 
     // Seed defaults so save/restore matches initial behavior.
     paramState_.clear();
-    paramState_[ParamIDs::kParamEffectEnabled] = 1.0;
+    paramState_[ParamIDs::kParamEffectEnabled] = 0.0;
     paramState_[ParamIDs::kParamBeatSelect] = 0.0;
     for (int b = 0; b < kMaxBeats; ++b) {
         paramState_[beatParamId(b, BeatParamSlot::kSlotBars)] = (4.0 - 1.0) / (kMaxLoopLength - 1.0);

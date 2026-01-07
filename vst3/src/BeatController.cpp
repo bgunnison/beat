@@ -6,6 +6,9 @@
 #include "vstgui/uidescription/uidescription.h"
 #include "base/source/fstreamer.h"
 #include <algorithm>
+#include <array>
+#include <cctype>
+#include <cmath>
 #include <string>
 
 namespace beatvst {
@@ -17,7 +20,7 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     if (res != kResultOk) return res;
 
     // Effect on/off
-    RangeParameter* effectEnabled = new RangeParameter(STR16("Effect Enabled"), ParamIDs::kParamEffectEnabled, nullptr, 0.0, 1.0, 1.0);
+    RangeParameter* effectEnabled = new RangeParameter(STR16("Mute"), ParamIDs::kParamEffectEnabled, nullptr, 0.0, 1.0, 0.0);
     parameters.addParameter(effectEnabled);
 
     RangeParameter* beatSelect = new RangeParameter(STR16("Beat Select"), ParamIDs::kParamBeatSelect, nullptr, 1.0, static_cast<ParamValue>(kMaxBeats), 1.0);
@@ -134,6 +137,61 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
     return res;
 }
 
+bool BeatController::isNoteParam(ParamID pid) const {
+    if (pid >= kActiveParamBase && pid < kActiveParamBase + kPerBeatParams) {
+        return static_cast<int>(pid - kActiveParamBase) == ActiveParamSlot::kActiveNoteIndex;
+    }
+    if (pid >= kParamBaseBeatParams && pid < kActiveParamBase) {
+        int rel = static_cast<int>(pid - kParamBaseBeatParams);
+        int slot = rel % kPerBeatParams;
+        return slot == BeatParamSlot::kSlotNoteIndex;
+    }
+    return false;
+}
+
+static int normalizedToNoteIndex(ParamValue valueNormalized) {
+    constexpr int min = 0;
+    constexpr int max = 11;
+    double v = min + valueNormalized * (max - min);
+    v = std::clamp(v, static_cast<double>(min), static_cast<double>(max));
+    return static_cast<int>(std::round(v));
+}
+
+tresult PLUGIN_API BeatController::getParamStringByValue(ParamID pid, ParamValue valueNormalized, String128 string) {
+    if (isNoteParam(pid)) {
+        static constexpr const char* kNoteNames[] = {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+        };
+        const int idx = normalizedToNoteIndex(valueNormalized);
+        UString(string, str16BufferSize(String128)).fromAscii(kNoteNames[idx]);
+        return kResultOk;
+    }
+    return EditControllerEx1::getParamStringByValue(pid, valueNormalized, string);
+}
+
+tresult PLUGIN_API BeatController::getParamValueByString(ParamID pid, TChar* string, ParamValue& valueNormalized) {
+    if (isNoteParam(pid)) {
+        UString noteStr(string, str16BufferSize(String128));
+        char buffer[128]{};
+        noteStr.toAscii(buffer, static_cast<int32>(sizeof(buffer)));
+        std::string ascii(buffer);
+        for (auto& ch : ascii) {
+            ch = static_cast<char>(std::toupper(static_cast<unsigned char>(ch)));
+        }
+
+        static constexpr const char* kNoteNames[] = {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+        };
+        for (int i = 0; i < 12; ++i) {
+            if (ascii == kNoteNames[i]) {
+                valueNormalized = static_cast<ParamValue>(i) / 11.0;
+                return kResultOk;
+            }
+        }
+    }
+    return EditControllerEx1::getParamValueByString(pid, string, valueNormalized);
+}
+
 void BeatController::buildParamOrder() {
     paramOrder_.clear();
     paramOrder_.push_back(ParamIDs::kParamEffectEnabled);
@@ -150,7 +208,7 @@ void BeatController::buildParamOrder() {
 }
 
 ParamValue BeatController::defaultNormalized(ParamID pid) const {
-    if (pid == ParamIDs::kParamEffectEnabled) return 1.0;
+    if (pid == ParamIDs::kParamEffectEnabled) return 0.0;
     if (pid == ParamIDs::kParamBeatSelect) return 0.0;
 
     if (pid < kParamBaseBeatParams) return 0.0;
@@ -192,6 +250,9 @@ void BeatController::syncActiveParams() {
         EditControllerEx1::setParamNormalized(dst, v);
     }
     syncingActive_ = false;
+    if (componentHandler) {
+        componentHandler->restartComponent(Vst::kParamValuesChanged);
+    }
 }
 
 int BeatController::selectedBeatIndex() {

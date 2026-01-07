@@ -111,17 +111,21 @@ void Beat::checkMute() {
 }
 
 bool Beat::setParam(const char* name, int value) {
-    if (std::string(name) == "Bars") params_.bars = value;
-    else if (std::string(name) == "Loop") params_.loop = value;
-    else if (std::string(name) == "Beats") params_.beats = value;
-    else if (std::string(name) == "Rotate") params_.rotate = value;
-    else if (std::string(name) == "Octave") params_.octave = value;
-    else if (std::string(name) == "Note") params_.noteIndex = value;
-    else if (std::string(name) == "Loud") params_.loud = value;
+    const std::string key(name);
+    if (key == "Bars") params_.bars = value;
+    else if (key == "Loop") params_.loop = value;
+    else if (key == "Beats") params_.beats = value;
+    else if (key == "Rotate") params_.rotate = value;
+    else if (key == "Octave") params_.octave = value;
+    else if (key == "Note" || key == "NoteIndex") params_.noteIndex = value;
+    else if (key == "Loud") params_.loud = value;
     else return false;
 
-    if (std::string(name) == "Octave" || std::string(name) == "Note") {
+    if (key == "Octave" || key == "Note" || key == "NoteIndex") {
         updateNotes_ = true;
+    } else if (key == "Loud") {
+        // Loudness should not rebuild the pattern; it only affects velocity/mute.
+        updatePattern_ = false;
     } else {
         updatePattern_ = true;
     }
@@ -185,6 +189,7 @@ void BeatEngine::setBeatParam(const char* name, int value) {
 }
 
 void BeatEngine::processTick(int globalTick, std::vector<BeatEvent>& out) {
+    if (muted_) return;
     for (auto& b : beats_) {
         b.tick(globalTick, out);
     }

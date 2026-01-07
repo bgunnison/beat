@@ -222,7 +222,7 @@
 									"origin": "40, 35",
 									"round-rect-radius": "0",
 									"size": "70, 20",
-									"title": "Effect On",
+									"title": "Mute",
 									"transparent": "false",
 									"wants-focus": "true",
 									"wheel-inc-value": "0.1"
@@ -356,6 +356,35 @@
 									"zoom-factor": "10"
 								}
 							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Bars",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 95",
+									"round-rect-radius": "0",
+									"size": "360, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
+								}
+							},
 							"CTextLabel": {
 								"attributes": {
 									"back-color": "~ BlackCColor",
@@ -421,6 +450,35 @@
 									"zoom-factor": "10"
 								}
 							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Loop",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 125",
+									"round-rect-radius": "0",
+									"size": "360, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
+								}
+							},
 							"CTextLabel": {
 								"attributes": {
 									"back-color": "~ BlackCColor",
@@ -484,6 +542,35 @@
 									"wants-focus": "true",
 									"wheel-inc-value": "1",
 									"zoom-factor": "10"
+								}
+							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Beats",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 155",
+									"round-rect-radius": "0",
+									"size": "360, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
 								}
 							},
 							"CTextLabel": {
@@ -552,6 +639,35 @@
 									"zoom-factor": "10"
 								}
 							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Rotate",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 185",
+									"round-rect-radius": "0",
+									"size": "360, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
+								}
+							},
 							"CTextLabel": {
 								"attributes": {
 									"back-color": "~ BlackCColor",
@@ -616,6 +732,35 @@
 									"wants-focus": "true",
 									"wheel-inc-value": "1",
 									"zoom-factor": "10"
+								}
+							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::NoteIndex",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "90, 215",
+									"round-rect-radius": "0",
+									"size": "110, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
 								}
 							},
 							"CTextLabel": {
@@ -684,6 +829,35 @@
 									"zoom-factor": "10"
 								}
 							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Octave",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "270, 215",
+									"round-rect-radius": "0",
+									"size": "80, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
+								}
+							},
 							"CTextLabel": {
 								"attributes": {
 									"back-color": "~ BlackCColor",
@@ -750,6 +924,35 @@
 									"zoom-factor": "10"
 								}
 							},
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Active::Loud",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "420, 215",
+									"round-rect-radius": "0",
+									"size": "60, 18",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
+								}
+							},
 							"CSlider": {
 								"attributes": {
 									"bitmap-offset": "0, 0",
@@ -776,6 +979,36 @@
 									"wants-focus": "true",
 									"wheel-inc-value": "1",
 									"zoom-factor": "10"
+								}
+							}
+							,
+							"CParamDisplay": {
+								"attributes": {
+									"back-color": "~ TransparentCColor",
+									"background-offset": "0, 0",
+									"class": "CParamDisplay",
+									"control-tag": "Root::BeatSelect",
+									"font": "Default",
+									"font-antialias": "true",
+									"font-color": "Text",
+									"frame-color": "~ TransparentCColor",
+									"frame-width": "1",
+									"mouse-enabled": "false",
+									"opacity": "1",
+									"origin": "110, 60",
+									"round-rect-radius": "0",
+									"size": "340, 30",
+									"style-3D-in": "false",
+									"style-3D-out": "false",
+									"style-no-draw": "false",
+									"style-no-frame": "true",
+									"text-alignment": "center",
+									"text-inset": "0, 0",
+									"text-rotation": "0",
+									"text-shadow-offset": "0, 0",
+									"transparent": "true",
+									"value-precision": "0",
+									"wants-focus": "false"
 								}
 							}
 						}

@@ -64,6 +64,7 @@ public:
     void selectBeat(int oneBased);
     int selectedBeat() const { return selected_ + 1; }
     void setBeatParam(const char* name, int value);
+    void setMuted(bool muted) { muted_ = muted; }
     const BeatParams& getBeatParams(int idx) const { return beats_[idx].params(); }
     void processTick(int globalTick, std::vector<BeatEvent>& out);
     void purgeAll(std::vector<BeatEvent>& out);
@@ -71,6 +72,7 @@ public:
 private:
     std::array<Beat, kMaxBeats> beats_{};
     int selected_{0};
+    bool muted_{false};
 };
 
 uint8_t noteIndexToMidi(int octave, int noteIndex);
