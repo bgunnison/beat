@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #include "BeatProcessor.h"
 
 #include "BeatController.h"
@@ -392,3 +394,4 @@ tresult PLUGIN_API BeatProcessor::getState(IBStream* state) {
 }
 
 } // namespace beatvst
+

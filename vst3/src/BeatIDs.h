@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #pragma once
 
 #include "pluginterfaces/base/fplatform.h"
@@ -80,3 +82,4 @@ inline Steinberg::Vst::ParamID laneSoloParamId(int beatIndex) {
 inline Steinberg::Vst::ParamID laneActivityParamId(int beatIndex) {
     return static_cast<Steinberg::Vst::ParamID>(kLaneActivityBase + beatIndex);
 }
+

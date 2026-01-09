@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #pragma once
 
 #include <array>
@@ -85,3 +87,4 @@ private:
 uint8_t noteIndexToMidi(int octave, int noteIndex);
 
 } // namespace beatvst
+

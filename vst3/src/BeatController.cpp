@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #include "BeatController.h"
 
 #include "BeatEngine.h"
@@ -58,23 +60,30 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     };
 
     for (int b = 0; b < kMaxBeats; ++b) {
-        addBeatParam(b, "Bars", beatParamId(b, BeatParamSlot::kSlotBars), 1, kMaxLoopLength, 4, 0, kRootUnitId);
-        addBeatParam(b, "Loop", beatParamId(b, BeatParamSlot::kSlotLoop), 1, kMaxLoopLength, 16, 0, kRootUnitId);
-        addBeatParam(b, "Beats", beatParamId(b, BeatParamSlot::kSlotBeats), 0, kMaxLoopLength, 4, 0, kRootUnitId);
-        addBeatParam(b, "Rotate", beatParamId(b, BeatParamSlot::kSlotRotate), 0, kMaxLoopLength, 0, 0, kRootUnitId);
-        addBeatParam(b, "NoteIndex", beatParamId(b, BeatParamSlot::kSlotNoteIndex), 0, 11, b % 12, 0, kRootUnitId);
-        addBeatParam(b, "Octave", beatParamId(b, BeatParamSlot::kSlotOctave), kMinOctave, kMaxOctave, 2, 0, kRootUnitId);
-        addBeatParam(b, "Loud", beatParamId(b, BeatParamSlot::kSlotLoud), 0, 127, 0, 0, kRootUnitId);
+        const int laneNumber = b + 1;
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Bars", beatParamId(b, BeatParamSlot::kSlotBars), 1, kMaxLoopLength, 4, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Loop", beatParamId(b, BeatParamSlot::kSlotLoop), 1, kMaxLoopLength, 16, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Beats", beatParamId(b, BeatParamSlot::kSlotBeats), 0, kMaxLoopLength, 4, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Rotate", beatParamId(b, BeatParamSlot::kSlotRotate), 0, kMaxLoopLength, 0, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Note", beatParamId(b, BeatParamSlot::kSlotNoteIndex), 0, 11, b % 12, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Octave", beatParamId(b, BeatParamSlot::kSlotOctave), kMinOctave, kMaxOctave, 2, 0, kRootUnitId);
+        addBeatParam(b, "Lane " + std::to_string(laneNumber) + " Loud", beatParamId(b, BeatParamSlot::kSlotLoud), 0, 127, 0, 0, kRootUnitId);
 
-        auto* laneMute = new RangeParameter(STR16("Lane Mute"), laneMuteParamId(b), nullptr, 0.0, 1.0, 0.0);
+        String128 laneMuteTitle{};
+        UString(laneMuteTitle, str16BufferSize(String128)).fromAscii(("Lane " + std::to_string(laneNumber) + " Mute").c_str());
+        auto* laneMute = new RangeParameter(laneMuteTitle, laneMuteParamId(b), nullptr, 0.0, 1.0, 0.0);
         laneMute->setPrecision(0);
         parameters.addParameter(laneMute);
 
-        auto* laneSolo = new RangeParameter(STR16("Lane Solo"), laneSoloParamId(b), nullptr, 0.0, 1.0, 0.0);
+        String128 laneSoloTitle{};
+        UString(laneSoloTitle, str16BufferSize(String128)).fromAscii(("Lane " + std::to_string(laneNumber) + " Solo").c_str());
+        auto* laneSolo = new RangeParameter(laneSoloTitle, laneSoloParamId(b), nullptr, 0.0, 1.0, 0.0);
         laneSolo->setPrecision(0);
         parameters.addParameter(laneSolo);
 
-        auto* laneActivity = new RangeParameter(STR16("Lane Activity"), laneActivityParamId(b), nullptr, 0.0, 1.0, 0.0);
+        String128 laneActivityTitle{};
+        UString(laneActivityTitle, str16BufferSize(String128)).fromAscii(("Lane " + std::to_string(laneNumber) + " Activity").c_str());
+        auto* laneActivity = new RangeParameter(laneActivityTitle, laneActivityParamId(b), nullptr, 0.0, 1.0, 0.0);
         laneActivity->setPrecision(0);
         laneActivity->getInfo().flags = ParameterInfo::kIsReadOnly;
         parameters.addParameter(laneActivity);
@@ -101,6 +110,23 @@ tresult PLUGIN_API BeatController::getState(IBStream* state) {
     return kResultOk;
 }
 
+tresult PLUGIN_API BeatController::setComponentState(IBStream* state) {
+    if (!state) return kInvalidArgument;
+    IBStreamer streamer(state, kLittleEndian);
+    for (auto pid : paramOrder_) {
+        double v = 0.0;
+        if (!streamer.readDouble(v)) break;
+        setParamNormalized(pid, v);
+    }
+    syncActiveParams();
+    if (componentHandler) {
+        pushAllParamsToProcessor();
+    } else {
+        pendingProcessorSync_ = true;
+    }
+    return kResultOk;
+}
+
 tresult PLUGIN_API BeatController::setState(IBStream* state) {
     IBStreamer streamer(state, kLittleEndian);
     for (auto pid : paramOrder_) {
@@ -109,10 +135,18 @@ tresult PLUGIN_API BeatController::setState(IBStream* state) {
         setParamNormalized(pid, v);
     }
     syncActiveParams();
+    if (componentHandler) {
+        pushAllParamsToProcessor();
+    } else {
+        pendingProcessorSync_ = true;
+    }
     return kResultOk;
 }
 
 tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue value) {
+    if (pendingProcessorSync_ && componentHandler) {
+        pushAllParamsToProcessor();
+    }
     tresult res = EditControllerEx1::setParamNormalized(pid, value);
     if (pid == ParamIDs::kParamBeatSelect) {
         syncActiveParams();
@@ -142,6 +176,22 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
         EditControllerEx1::setParamNormalized(ParamIDs::kParamReset, 0.0);
     }
     return res;
+}
+
+void BeatController::pushAllParamsToProcessor() {
+    if (!componentHandler || pushingToProcessor_) return;
+    pushingToProcessor_ = true;
+    pendingProcessorSync_ = false;
+    for (auto pid : paramOrder_) {
+        if (pid == ParamIDs::kParamReset) continue;
+        if (pid >= kActiveParamBase && pid < kLaneMuteBase) continue;
+        if (pid >= kLaneActivityBase) continue;
+        const ParamValue v = getParamNormalized(pid);
+        componentHandler->beginEdit(pid);
+        componentHandler->performEdit(pid, v);
+        componentHandler->endEdit(pid);
+    }
+    pushingToProcessor_ = false;
 }
 
 bool BeatController::isNoteParam(ParamID pid) const {
@@ -293,3 +343,4 @@ int BeatController::selectedBeatIndex() {
 }
 
 } // namespace beatvst
+

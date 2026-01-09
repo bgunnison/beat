@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #include "BeatController.h"
 #include "BeatIDs.h"
 #include "BeatProcessor.h"
@@ -38,3 +40,4 @@ BEGIN_FACTORY_DEF(kBeatVst3Vendor, kBeatVst3Url, kBeatVst3Email)
                BeatController::createInstance)
 
 END_FACTORY
+

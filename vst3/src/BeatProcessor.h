@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #pragma once
 
 #include "BeatEngine.h"
@@ -54,3 +56,4 @@ protected:
 };
 
 } // namespace beatvst
+

@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #pragma once
 
 #include "BeatIDs.h"
@@ -14,6 +16,7 @@ public:
     // VST3
     Steinberg::tresult PLUGIN_API initialize(Steinberg::FUnknown* context) SMTG_OVERRIDE;
     Steinberg::IPlugView* PLUGIN_API createView(Steinberg::FIDString name) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API setComponentState(Steinberg::IBStream* state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream* state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream* state) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API setParamNormalized(Steinberg::Vst::ParamID pid, Steinberg::Vst::ParamValue value) SMTG_OVERRIDE;
@@ -26,11 +29,15 @@ private:
     void buildParamOrder();
     Steinberg::Vst::ParamValue defaultNormalized(Steinberg::Vst::ParamID pid) const;
     void resetAllParams();
+    void pushAllParamsToProcessor();
     void syncActiveParams();
     int selectedBeatIndex();
     bool isNoteParam(Steinberg::Vst::ParamID pid) const;
     bool syncingActive_{false};
+    bool pendingProcessorSync_{false};
+    bool pushingToProcessor_{false};
     std::vector<Steinberg::Vst::ParamID> paramOrder_;
 };
 
 } // namespace beatvst
+

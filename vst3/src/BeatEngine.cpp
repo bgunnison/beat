@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #include "BeatEngine.h"
 
 #include <algorithm>
@@ -226,3 +228,4 @@ void BeatEngine::purgeAll(std::vector<BeatEvent>& out) {
 }
 
 } // namespace beatvst
+

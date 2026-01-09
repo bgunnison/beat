@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Brian R. Gunnison
+// MIT License
 #pragma once
 
 #include "pluginterfaces/gui/iplugview.h"
@@ -28,3 +30,4 @@ public:
 };
 
 } // namespace beatvst
+
