@@ -99,9 +99,8 @@ void Beat::rebuildPattern() {
     int ticksPerBar = params_.bars * 4 * 24;
     tickCountdown_ = 0;
     truthIndex_ = 0;
-    // run() is called every tick; we only act every 6 ticks.
-    // So beat interval is (ticksPerBar/6) / loop.
-    int ticksPerStep = static_cast<int>(std::round((ticksPerBar / 6.0) / params_.loop));
+    // run() is called every tick; advance steps based on ticks per bar and loop length.
+    int ticksPerStep = static_cast<int>(std::round(ticksPerBar / static_cast<double>(params_.loop)));
     stepTicks_ = std::max(1, ticksPerStep);
     tickCountdown_ = stepTicks_;
     updatePattern_ = false;

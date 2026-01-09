@@ -42,6 +42,7 @@ constexpr int kActiveParamBase = kParamBaseBeatParams + beatvst::kMaxBeats * kPe
 constexpr int kLaneMuteBase = kActiveParamBase + kPerBeatParams;
 constexpr int kLaneSoloBase = kLaneMuteBase + beatvst::kMaxBeats;
 constexpr int kLaneActivityBase = kLaneSoloBase + beatvst::kMaxBeats;
+constexpr Steinberg::Vst::ParamID kParamGlobalSolo = kLaneActivityBase + beatvst::kMaxBeats;
 
 inline Steinberg::Vst::ParamID beatParamId(int beatIndex, int paramSlot) {
     return static_cast<Steinberg::Vst::ParamID>(kParamBaseBeatParams + beatIndex * kPerBeatParams + paramSlot);

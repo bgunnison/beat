@@ -22,8 +22,12 @@ tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     if (res != kResultOk) return res;
 
     // Effect on/off
-    RangeParameter* effectEnabled = new RangeParameter(STR16("Mute"), ParamIDs::kParamEffectEnabled, nullptr, 0.0, 1.0, 0.0);
+    RangeParameter* effectEnabled = new RangeParameter(STR16("Mute All"), ParamIDs::kParamEffectEnabled, nullptr, 0.0, 1.0, 0.0);
     parameters.addParameter(effectEnabled);
+
+    RangeParameter* globalSolo = new RangeParameter(STR16("Global Solo"), kParamGlobalSolo, nullptr, 0.0, 1.0, 0.0);
+    globalSolo->setPrecision(0);
+    parameters.addParameter(globalSolo);
 
     RangeParameter* beatSelect = new RangeParameter(STR16("Beat Select"), ParamIDs::kParamBeatSelect, nullptr, 1.0, static_cast<ParamValue>(kMaxBeats), 1.0);
     beatSelect->setPrecision(0);
@@ -115,9 +119,12 @@ tresult PLUGIN_API BeatController::setComponentState(IBStream* state) {
     IBStreamer streamer(state, kLittleEndian);
     for (auto pid : paramOrder_) {
         double v = 0.0;
-        if (!streamer.readDouble(v)) break;
-        setParamNormalized(pid, v);
+        if (!streamer.readDouble(v)) v = defaultNormalized(pid);
+        if (pid != kParamGlobalSolo) {
+            setParamNormalized(pid, v);
+        }
     }
+    syncGlobalSolo();
     syncActiveParams();
     if (componentHandler) {
         pushAllParamsToProcessor();
@@ -131,9 +138,12 @@ tresult PLUGIN_API BeatController::setState(IBStream* state) {
     IBStreamer streamer(state, kLittleEndian);
     for (auto pid : paramOrder_) {
         double v = 0.0;
-        if (!streamer.readDouble(v)) return kResultFalse;
-        setParamNormalized(pid, v);
+        if (!streamer.readDouble(v)) v = defaultNormalized(pid);
+        if (pid != kParamGlobalSolo) {
+            setParamNormalized(pid, v);
+        }
     }
+    syncGlobalSolo();
     syncActiveParams();
     if (componentHandler) {
         pushAllParamsToProcessor();
@@ -152,6 +162,18 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
         syncActiveParams();
         return res;
     }
+    if (pid == ParamIDs::kParamEffectEnabled) {
+        applyGlobalMuteToLanes(value > 0.5);
+        return res;
+    }
+    if (pid == kParamGlobalSolo) {
+        if (value <= 0.5) {
+            applyGlobalSoloClear();
+        } else {
+            syncGlobalSolo();
+        }
+        return res;
+    }
     if (pid >= kActiveParamBase && pid < kActiveParamBase + kPerBeatParams) {
         if (!syncingActive_) {
             const int slot = static_cast<int>(pid - kActiveParamBase);
@@ -166,6 +188,10 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
             }
             syncingActive_ = false;
         }
+        return res;
+    }
+    if (pid >= kLaneSoloBase && pid < kLaneActivityBase) {
+        syncGlobalSolo();
         return res;
     }
     if (pid == ParamIDs::kParamReset && value > 0.5) {
@@ -186,12 +212,55 @@ void BeatController::pushAllParamsToProcessor() {
         if (pid == ParamIDs::kParamReset) continue;
         if (pid >= kActiveParamBase && pid < kLaneMuteBase) continue;
         if (pid >= kLaneActivityBase) continue;
+        if (pid == kParamGlobalSolo) continue;
         const ParamValue v = getParamNormalized(pid);
         componentHandler->beginEdit(pid);
         componentHandler->performEdit(pid, v);
         componentHandler->endEdit(pid);
     }
     pushingToProcessor_ = false;
+}
+
+void BeatController::applyGlobalMuteToLanes(bool muted) {
+    if (!componentHandler) return;
+    for (int b = 0; b < kMaxBeats; ++b) {
+        const ParamID pid = laneMuteParamId(b);
+        const ParamValue v = muted ? 1.0 : 0.0;
+        EditControllerEx1::setParamNormalized(pid, v);
+        componentHandler->beginEdit(pid);
+        componentHandler->performEdit(pid, v);
+        componentHandler->endEdit(pid);
+    }
+}
+
+void BeatController::applyGlobalSoloClear() {
+    if (!componentHandler) return;
+    for (int b = 0; b < kMaxBeats; ++b) {
+        const ParamID pid = laneSoloParamId(b);
+        EditControllerEx1::setParamNormalized(pid, 0.0);
+        componentHandler->beginEdit(pid);
+        componentHandler->performEdit(pid, 0.0);
+        componentHandler->endEdit(pid);
+    }
+    EditControllerEx1::setParamNormalized(kParamGlobalSolo, 0.0);
+    componentHandler->beginEdit(kParamGlobalSolo);
+    componentHandler->performEdit(kParamGlobalSolo, 0.0);
+    componentHandler->endEdit(kParamGlobalSolo);
+}
+
+void BeatController::syncGlobalSolo() {
+    bool anySolo = false;
+    for (int b = 0; b < kMaxBeats; ++b) {
+        const ParamID pid = laneSoloParamId(b);
+        if (getParamNormalized(pid) > 0.5) { anySolo = true; break; }
+    }
+    const ParamValue v = anySolo ? 1.0 : 0.0;
+    EditControllerEx1::setParamNormalized(kParamGlobalSolo, v);
+    if (componentHandler) {
+        componentHandler->beginEdit(kParamGlobalSolo);
+        componentHandler->performEdit(kParamGlobalSolo, v);
+        componentHandler->endEdit(kParamGlobalSolo);
+    }
 }
 
 bool BeatController::isNoteParam(ParamID pid) const {
@@ -264,10 +333,12 @@ void BeatController::buildParamOrder() {
         paramOrder_.push_back(laneMuteParamId(b));
         paramOrder_.push_back(laneSoloParamId(b));
     }
+    paramOrder_.push_back(kParamGlobalSolo);
 }
 
 ParamValue BeatController::defaultNormalized(ParamID pid) const {
     if (pid == ParamIDs::kParamEffectEnabled) return 0.0;
+    if (pid == kParamGlobalSolo) return 0.0;
     if (pid == ParamIDs::kParamBeatSelect) return 0.0;
 
     if (pid < kParamBaseBeatParams) return 0.0;

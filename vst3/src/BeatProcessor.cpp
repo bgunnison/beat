@@ -88,6 +88,24 @@ void BeatProcessor::applyNormalizedParam(ParamID pid, ParamValue value) {
     if (pid == ParamIDs::kParamEffectEnabled) {
         paramState_[pid] = value;
         engine_.setMuted(value > 0.5);
+        const bool muted = value > 0.5;
+        for (int b = 0; b < kMaxBeats; ++b) {
+            laneMute_[static_cast<size_t>(b)] = muted;
+            engine_.setLaneMute(b, muted);
+            paramState_[laneMuteParamId(b)] = muted ? 1.0 : 0.0;
+        }
+        return;
+    }
+
+    if (pid == kParamGlobalSolo) {
+        paramState_[pid] = value;
+        if (value <= 0.5) {
+            for (int b = 0; b < kMaxBeats; ++b) {
+                laneSolo_[static_cast<size_t>(b)] = false;
+                engine_.setLaneSolo(b, false);
+                paramState_[laneSoloParamId(b)] = 0.0;
+            }
+        }
         return;
     }
 
@@ -114,6 +132,11 @@ void BeatProcessor::applyNormalizedParam(ParamID pid, ParamValue value) {
             laneSolo_[static_cast<size_t>(beatIndex)] = solo;
             engine_.setLaneSolo(beatIndex, solo);
             paramState_[pid] = solo ? 1.0 : 0.0;
+            bool anySolo = false;
+            for (bool s : laneSolo_) {
+                if (s) { anySolo = true; break; }
+            }
+            paramState_[kParamGlobalSolo] = anySolo ? 1.0 : 0.0;
         }
         return;
     }
@@ -188,6 +211,7 @@ void BeatProcessor::handleParameterChanges(ProcessData& data) {
 
 ParamValue BeatProcessor::defaultNormalized(ParamID pid) const {
     if (pid == ParamIDs::kParamEffectEnabled) return 0.0;
+    if (pid == kParamGlobalSolo) return 0.0;
     if (pid == ParamIDs::kParamBeatSelect) return 0.0;
     if (pid < kParamBaseBeatParams) return 0.0;
 
@@ -256,6 +280,7 @@ void BeatProcessor::buildParamOrder() {
         paramOrder_.push_back(laneMuteParamId(b));
         paramOrder_.push_back(laneSoloParamId(b));
     }
+    paramOrder_.push_back(kParamGlobalSolo);
 
     // Seed defaults so save/restore matches initial behavior.
     paramState_.clear();
@@ -376,8 +401,10 @@ tresult PLUGIN_API BeatProcessor::setState(IBStream* state) {
     IBStreamer streamer(state, kLittleEndian);
     for (auto pid : paramOrder_) {
         double v = 0.0;
-        if (!streamer.readDouble(v)) break;
-        applyNormalizedParam(pid, v);
+        if (!streamer.readDouble(v)) v = defaultNormalized(pid);
+        if (pid != kParamGlobalSolo) {
+            applyNormalizedParam(pid, v);
+        }
     }
     return kResultOk;
 }

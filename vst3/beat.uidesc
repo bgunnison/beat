@@ -156,6 +156,7 @@
 			"Lane8::Activity": "89",
 			"Root::BeatSelect": "1",
 			"Root::EffectEnabled": "0",
+			"Root::GlobalSolo": "90",
 			"Root::Reset": "2"
 		},
 		"custom": {
@@ -253,28 +254,58 @@
 									"wheel-inc-value": "0.1"
 								}
 							},
-							"CCheckBox": {
-								"attributes": {
-									"autosize-to-fit": "false",
-									"boxfill-color": "Background",
-									"boxframe-color": "~ BlackCColor",
-									"checkmark-color": "~ RedCColor",
-									"class": "CCheckBox",
-									"control-tag": "Root::EffectEnabled",
-									"draw-crossbox": "false",
-									"font": "Default",
-									"font-color": "Text",
-									"frame-width": "1",
-									"opacity": "1",
-									"origin": "40, 35",
-									"round-rect-radius": "0",
-									"size": "70, 20",
-									"title": "Mute all",
-									"transparent": "false",
-									"wants-focus": "true",
-									"wheel-inc-value": "0.1"
-								}
-							},
+							"CTextButton": {
+					"attributes": {
+						"class": "CTextButton",
+						"control-tag": "Root::EffectEnabled",
+						"font": "Default",
+						"frame-color": "~ BlackCColor",
+						"frame-color-highlighted": "~ BlackCColor",
+						"frame-width": "1",
+						"gradient": "Lane Button Off",
+						"gradient-highlighted": "Lane Button On",
+						"icon-position": "left",
+						"icon-text-margin": "0",
+						"kick-style": "false",
+						"opacity": "1",
+						"origin": "40, 35",
+						"round-radius": "2",
+						"size": "16, 16",
+						"text-alignment": "center",
+						"text-color": "Text",
+						"text-color-highlighted": "Text",
+						"title": "M",
+						"transparent": "false",
+						"wants-focus": "true",
+						"wheel-inc-value": "0.1"
+					}
+				},
+				"CTextButton": {
+					"attributes": {
+						"class": "CTextButton",
+						"control-tag": "Root::GlobalSolo",
+						"font": "Default",
+						"frame-color": "~ BlackCColor",
+						"frame-color-highlighted": "~ BlackCColor",
+						"frame-width": "1",
+						"gradient": "Lane Button Off",
+						"gradient-highlighted": "Lane Button On",
+						"icon-position": "left",
+						"icon-text-margin": "0",
+						"kick-style": "false",
+						"opacity": "1",
+						"origin": "60, 35",
+						"round-radius": "2",
+						"size": "16, 16",
+						"text-alignment": "center",
+						"text-color": "Text",
+						"text-color-highlighted": "Text",
+						"title": "S",
+						"transparent": "false",
+						"wants-focus": "true",
+						"wheel-inc-value": "0.1"
+					}
+				},
 							"CTextButton": {
 								"attributes": {
 									"class": "CTextButton",

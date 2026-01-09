@@ -30,6 +30,9 @@ private:
     Steinberg::Vst::ParamValue defaultNormalized(Steinberg::Vst::ParamID pid) const;
     void resetAllParams();
     void pushAllParamsToProcessor();
+    void applyGlobalMuteToLanes(bool muted);
+    void applyGlobalSoloClear();
+    void syncGlobalSolo();
     void syncActiveParams();
     int selectedBeatIndex();
     bool isNoteParam(Steinberg::Vst::ParamID pid) const;
