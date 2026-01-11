@@ -24,7 +24,7 @@ constexpr Steinberg::FIDString kBeatVst3Name = "Debug Beat";
 #else
 constexpr Steinberg::FIDString kBeatVst3Name = "Beat";
 #endif
-constexpr Steinberg::FIDString kBeatVst3Vendor = "AblePlugs";
+constexpr Steinberg::FIDString kBeatVst3Vendor = "VirtualRobot";
 constexpr Steinberg::FIDString kBeatVst3Version = "0.1.0 (" __DATE__ " " __TIME__ ")";
 constexpr const char kBeatVst3Build[] = __DATE__ " " __TIME__;
 constexpr Steinberg::FIDString kBeatVst3Url = "https://ableplugs.local/beat";

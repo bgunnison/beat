@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
+#ifdef BEAT_DEBUG_NAME
+#include <fstream>
+#endif
 
 namespace beatvst {
 using namespace Steinberg;
@@ -341,12 +344,91 @@ tresult PLUGIN_API BeatProcessor::process(ProcessData& data) {
         }
         wasPlaying_ = false;
         sampleRemainder_ = 0.0;
+        startDelaySamples_ = 0.0;
+        globalTick_ = -1;
+        int currentSelected = engine_.selectedBeat();
+        for (int b = 0; b < kMaxBeats; ++b) {
+            engine_.selectBeat(b + 1);
+            BeatParams p = engine_.getBeatParams(b);
+            engine_.setBeatParam("Bars", p.bars);
+            engine_.setBeatParam("Loop", p.loop);
+            engine_.setBeatParam("Beats", p.beats);
+            engine_.setBeatParam("Rotate", p.rotate);
+            engine_.setBeatParam("Octave", p.octave);
+            engine_.setBeatParam("NoteIndex", p.noteIndex);
+            engine_.setBeatParam("Loud", p.loud);
+        }
+        engine_.selectBeat(currentSelected);
         return kResultOk;
+    }
+    if (!wasPlaying_) {
+        startDelaySamples_ = 0.0;
+        if (data.processContext &&
+            (data.processContext->state & ProcessContext::kProjectTimeMusicValid)) {
+            double ppq = data.processContext->projectTimeMusic;
+            if (data.processContext->state & ProcessContext::kTimeSigValid) {
+                const int32 num = data.processContext->timeSigNumerator > 0 ? data.processContext->timeSigNumerator : 4;
+                const int32 den = data.processContext->timeSigDenominator > 0 ? data.processContext->timeSigDenominator : 4;
+                const double barLengthQ = num * (4.0 / static_cast<double>(den));
+                const double nearestBar = std::round(ppq / barLengthQ) * barLengthQ;
+                const double snapThresholdQ = 1.0 / 96.0;
+                if (std::abs(ppq - nearestBar) < snapThresholdQ) {
+                    ppq = nearestBar;
+                }
+            }
+            const double tickPos = ppq * 24.0;
+            const double tickFloor = std::floor(tickPos);
+            globalTick_ = static_cast<int64>(tickFloor) - 1;
+            const double tickFrac = tickPos - tickFloor;
+            if (tickFrac < 1e-4 || ppq < 1e-4) {
+                // Snap to the bar start: fire the first tick at sample offset 0.
+                sampleRemainder_ = samplesPerTick_;
+            } else {
+                sampleRemainder_ = tickFrac * samplesPerTick_;
+            }
+        } else {
+            sampleRemainder_ = 0.0;
+        }
+
+#ifdef BEAT_DEBUG_NAME
+        if (data.processContext) {
+            const double ppqLog = (data.processContext->state & ProcessContext::kProjectTimeMusicValid)
+                ? data.processContext->projectTimeMusic
+                : -1.0;
+            const double tempoLog = (data.processContext->state & ProcessContext::kTempoValid)
+                ? data.processContext->tempo
+                : -1.0;
+            const int32 numLog = (data.processContext->state & ProcessContext::kTimeSigValid)
+                ? data.processContext->timeSigNumerator
+                : 0;
+            const int32 denLog = (data.processContext->state & ProcessContext::kTimeSigValid)
+                ? data.processContext->timeSigDenominator
+                : 0;
+            std::ofstream log("C:\\projects\\ableplugs\\beat\\beat_start.log", std::ios::app);
+            log << "[Beat] start: ppq=" << ppqLog
+                << " tempo=" << tempoLog
+                << " sig=" << numLog << "/" << denLog
+                << " samplesPerTick=" << samplesPerTick_
+                << " sampleRemainder=" << sampleRemainder_
+                << std::endl;
+        }
+#endif
+        globalTick_ = -1;
+        engine_.resetTiming();
     }
     wasPlaying_ = true;
 
     double samplesToProcess = static_cast<double>(data.numSamples);
     double cursor = 0.0;
+    if (startDelaySamples_ > 0.0) {
+        if (startDelaySamples_ >= samplesToProcess) {
+            startDelaySamples_ -= samplesToProcess;
+            return kResultOk;
+        }
+        cursor = startDelaySamples_;
+        startDelaySamples_ = 0.0;
+        sampleRemainder_ = 0.0;
+    }
     double samplesUntilTick = samplesPerTick_ - sampleRemainder_;
 
     while (cursor + samplesUntilTick <= samplesToProcess) {

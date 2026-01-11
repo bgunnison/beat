@@ -102,7 +102,7 @@ void Beat::rebuildPattern() {
     // run() is called every tick; advance steps based on ticks per bar and loop length.
     int ticksPerStep = static_cast<int>(std::round(ticksPerBar / static_cast<double>(params_.loop)));
     stepTicks_ = std::max(1, ticksPerStep);
-    tickCountdown_ = stepTicks_;
+    tickCountdown_ = 0;
     updatePattern_ = false;
     checkMute();
 }
@@ -179,6 +179,15 @@ void Beat::tick(int globalTick, std::vector<BeatEvent>& out) {
     if (truthIndex_ >= static_cast<int>(truths_.size())) truthIndex_ = 0;
 }
 
+void Beat::resetTiming() {
+    truthIndex_ = 0;
+    tickCountdown_ = 0;
+    offTick_ = 0;
+    updatePattern_ = true;
+    updateNotes_ = true;
+    muted_ = false;
+}
+
 BeatEngine::BeatEngine() {
     for (int i = 0; i < kMaxBeats; ++i) beats_[static_cast<size_t>(i)] = Beat(i);
 }
@@ -223,6 +232,12 @@ void BeatEngine::purgeAll(std::vector<BeatEvent>& out) {
         ev.velocity = 0;
         ev.noteOn = false;
         out.push_back(ev);
+    }
+}
+
+void BeatEngine::resetTiming() {
+    for (auto& b : beats_) {
+        b.resetTiming();
     }
 }
 

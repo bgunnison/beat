@@ -3,7 +3,7 @@ setlocal
 
 set ROOT=%~dp0
 
-set SRC_DEBUG=%ROOT%build\VST3\Debug\DebugBeat.vst3
+set SRC_DEBUG=%ROOT%build\VST3\Debug\Beat.vst3
 set SRC_RELEASE=%ROOT%build\VST3\Release\Beat.vst3
 set DST_DIR=C:\ProgramData\vstplugins
 set DST_DEBUG=%DST_DIR%\DebugBeat.vst3

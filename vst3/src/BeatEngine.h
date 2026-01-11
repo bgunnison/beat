@@ -39,6 +39,7 @@ public:
     void setExternalMute(bool muted) { externalMute_ = muted; }
     void tick(int globalTick, std::vector<BeatEvent>& out);
     BeatParams params() const { return params_; }
+    void resetTiming();
 
 private:
     int index_{};
@@ -71,7 +72,8 @@ public:
     void setLaneMute(int beatIndex, bool muted);
     void setLaneSolo(int beatIndex, bool solo);
     void setMuted(bool muted) { muted_ = muted; }
-    const BeatParams& getBeatParams(int idx) const { return beats_[idx].params(); }
+    BeatParams getBeatParams(int idx) const { return beats_[idx].params(); }
+    void resetTiming();
     void processTick(int globalTick, std::vector<BeatEvent>& out);
     void purgeAll(std::vector<BeatEvent>& out);
 

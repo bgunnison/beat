@@ -44,6 +44,7 @@ protected:
     Steinberg::Vst::SampleRate sampleRate_{44100.0};
     double samplesPerTick_{(60.0 / 120.0) / 24.0}; // default 120 bpm, 24 ppq
     double sampleRemainder_{0.0};
+    double startDelaySamples_{0.0};
     Steinberg::int64 globalTick_{0};
     bool wasPlaying_{false};
     std::vector<Steinberg::Vst::ParamID> paramOrder_;
