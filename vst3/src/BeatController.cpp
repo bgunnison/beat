@@ -6,6 +6,7 @@
 #include "pluginterfaces/base/ustring.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 #include "vstgui/uidescription/uidescription.h"
+#include "vstgui/lib/controls/cautoanimation.h"
 #include "base/source/fstreamer.h"
 #include <algorithm>
 #include <array>
@@ -103,6 +104,15 @@ IPlugView* PLUGIN_API BeatController::createView(FIDString name) {
         return new VSTGUI::VST3Editor(this, "view", "beat.uidesc");
     }
     return EditControllerEx1::createView(name);
+}
+
+VSTGUI::CView* BeatController::verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes,
+                                          const VSTGUI::IUIDescription* description, VSTGUI::VST3Editor* editor) {
+    auto* autoAnim = dynamic_cast<VSTGUI::CAutoAnimation*>(view);
+    if (autoAnim && !autoAnim->isWindowOpened()) {
+        autoAnim->openWindow();
+    }
+    return view;
 }
 
 tresult PLUGIN_API BeatController::getState(IBStream* state) {

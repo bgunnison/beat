@@ -109,6 +109,7 @@ add_dependencies(Beat BeatUIDesc)
 
 set(Beat_RESOURCES
     ${BEAT_UIDESC_GENERATED}
+    ${CMAKE_CURRENT_SOURCE_DIR}/logo_strip.png
 )
 
 smtg_target_add_plugin_resources(Beat

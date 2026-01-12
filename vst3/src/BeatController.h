@@ -5,10 +5,11 @@
 #include "BeatIDs.h"
 
 #include "public.sdk/source/vst/vsteditcontroller.h"
+#include "vstgui/plugin-bindings/vst3editor.h"
 
 namespace beatvst {
 
-class BeatController : public Steinberg::Vst::EditControllerEx1 {
+class BeatController : public Steinberg::Vst::EditControllerEx1, public VSTGUI::VST3EditorDelegate {
 public:
     BeatController() = default;
     static Steinberg::FUnknown* createInstance(void*) { return static_cast<Steinberg::Vst::IEditController*>(new BeatController()); }
@@ -24,6 +25,8 @@ public:
                                                         Steinberg::Vst::String128 string) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getParamValueByString(Steinberg::Vst::ParamID pid, Steinberg::Vst::TChar* string,
                                                         Steinberg::Vst::ParamValue& valueNormalized) SMTG_OVERRIDE;
+    VSTGUI::CView* verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes,
+                              const VSTGUI::IUIDescription* description, VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
 
 private:
     void buildParamOrder();
