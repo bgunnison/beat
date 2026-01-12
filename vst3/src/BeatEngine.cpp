@@ -143,8 +143,25 @@ void Beat::setParams(const BeatParams& p) {
 }
 
 void Beat::tick(int globalTick, std::vector<BeatEvent>& out) {
-    if (updateNotes_) rebuildNotes();
-    if (updatePattern_) rebuildPattern();
+    if (updateNotes_) {
+        if (offTick_ != 0) {
+            BeatEvent ev{index_, noteOff_, 0, false};
+            out.push_back(ev);
+            offTick_ = 0;
+        }
+        rebuildNotes();
+    }
+    if (updatePattern_) {
+        if (offTick_ != 0) {
+            BeatEvent ev{index_, noteOff_, 0, false};
+            out.push_back(ev);
+            offTick_ = 0;
+        }
+        rebuildPattern();
+        // Avoid bursts by restarting on the next step after a structural change.
+        tickCountdown_ = stepTicks_;
+        return;
+    }
 
     const bool effectiveMute = mute_ || externalMute_;
     if (effectiveMute) {
