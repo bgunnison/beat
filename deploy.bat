@@ -10,6 +10,7 @@ set SRC_LOGO=%ROOT%vst3\logo_strip.png
 set DST_DIR=C:\ProgramData\vstplugins
 set DST_DEBUG=%DST_DIR%\DebugBeat.vst3
 set DST_RELEASE=%DST_DIR%\Beat.vst3
+set ZIP_RELEASE=%ROOT%Beat.vst3.zip
 
 if not exist "%SRC_DEBUG_BIN%" (
   echo Missing Debug build at: %SRC_DEBUG_BIN%
@@ -98,7 +99,24 @@ for %%F in ("%DST_DEBUG%\Contents\Resources\logo_strip.png" "%DST_RELEASE%\Conte
   )
 )
 
-echo Deploy OK: %DST_DEBUG% and %DST_RELEASE%
+if exist "%ZIP_RELEASE%" del /F /Q "%ZIP_RELEASE%"
+if exist "%ZIP_RELEASE%" (
+  echo Release zip failed: could not clear %ZIP_RELEASE%
+  goto :done
+)
+
+powershell -NoProfile -Command "Compress-Archive -Path $env:DST_RELEASE -DestinationPath $env:ZIP_RELEASE -Force"
+if errorlevel 1 (
+  echo Release zip failed: %ZIP_RELEASE%
+  goto :done
+)
+
+if not exist "%ZIP_RELEASE%" (
+  echo Release zip failed: missing %ZIP_RELEASE%
+  goto :done
+)
+
+echo Deploy OK: %DST_DEBUG%, %DST_RELEASE%, %ZIP_RELEASE%
 
 :done
 pause
