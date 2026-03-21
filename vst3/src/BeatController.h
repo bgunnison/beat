@@ -25,8 +25,12 @@ public:
                                                         Steinberg::Vst::String128 string) SMTG_OVERRIDE;
     Steinberg::tresult PLUGIN_API getParamValueByString(Steinberg::Vst::ParamID pid, Steinberg::Vst::TChar* string,
                                                         Steinberg::Vst::ParamValue& valueNormalized) SMTG_OVERRIDE;
+    Steinberg::tresult PLUGIN_API setComponentHandler(Steinberg::Vst::IComponentHandler* handler) SMTG_OVERRIDE;
+    VSTGUI::IController* createSubController(VSTGUI::UTF8StringPtr name, const VSTGUI::IUIDescription* description,
+                                             VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
     VSTGUI::CView* verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes,
                               const VSTGUI::IUIDescription* description, VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
+    void didOpen(VSTGUI::VST3Editor* editor) SMTG_OVERRIDE;
 
 private:
     void buildParamOrder();
@@ -37,11 +41,13 @@ private:
     void applyGlobalSoloClear();
     void syncGlobalSolo();
     void syncActiveParams();
+    void exposeAutomatableParams();
     int selectedBeatIndex();
     bool isNoteParam(Steinberg::Vst::ParamID pid) const;
     bool syncingActive_{false};
     bool pendingProcessorSync_{false};
     bool pushingToProcessor_{false};
+    bool autoExposed_{false};
     std::vector<Steinberg::Vst::ParamID> paramOrder_;
 };
 

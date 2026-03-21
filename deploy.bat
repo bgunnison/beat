@@ -4,8 +4,9 @@ setlocal
 set ROOT=%~dp0
 
 set SRC_DEBUG_BIN=%ROOT%build\VST3\Debug\Beat.vst3
-set SRC_DEBUG_RES=%ROOT%build\VST3\Debug\DebugBeat.vst3
 set SRC_RELEASE=%ROOT%build\VST3\Release\Beat.vst3
+set SRC_UIDESC=%ROOT%vst3\beat.uidesc
+set SRC_LOGO=%ROOT%vst3\logo_strip.png
 set DST_DIR=C:\ProgramData\vstplugins
 set DST_DEBUG=%DST_DIR%\DebugBeat.vst3
 set DST_RELEASE=%DST_DIR%\Beat.vst3
@@ -16,15 +17,19 @@ if not exist "%SRC_DEBUG_BIN%" (
   goto :done
 )
 
-if not exist "%SRC_DEBUG_RES%" (
-  echo Missing Debug resources at: %SRC_DEBUG_RES%
+if not exist "%SRC_RELEASE%" (
+  echo Missing Release build at: %SRC_RELEASE%
   echo Run build.bat first.
   goto :done
 )
 
-if not exist "%SRC_RELEASE%" (
-  echo Missing Release build at: %SRC_RELEASE%
-  echo Run build.bat first.
+if not exist "%SRC_UIDESC%" (
+  echo Missing UI desc at: %SRC_UIDESC%
+  goto :done
+)
+
+if not exist "%SRC_LOGO%" (
+  echo Missing logo resource at: %SRC_LOGO%
   goto :done
 )
 
@@ -52,13 +57,22 @@ robocopy "%SRC_DEBUG_BIN%" "%DST_DEBUG%" /E /NFL /NDL /NJH /NJS /NC /NS
 set RC=%ERRORLEVEL%
 if %RC% GEQ 8 goto :done
 
-robocopy "%SRC_DEBUG_RES%\Contents\Resources" "%DST_DEBUG%\Contents\Resources" /E /NFL /NDL /NJH /NJS /NC /NS
-set RC=%ERRORLEVEL%
-if %RC% GEQ 8 goto :done
-
 robocopy "%SRC_RELEASE%" "%DST_RELEASE%" /E /NFL /NDL /NJH /NJS /NC /NS
 set RC=%ERRORLEVEL%
 if %RC% GEQ 8 goto :done
+
+if not exist "%DST_DEBUG%\Contents\Resources" mkdir "%DST_DEBUG%\Contents\Resources"
+if not exist "%DST_RELEASE%\Contents\Resources" mkdir "%DST_RELEASE%\Contents\Resources"
+
+copy /Y "%SRC_UIDESC%" "%DST_DEBUG%\Contents\Resources\beat.uidesc" >nul
+if errorlevel 1 goto :done
+copy /Y "%SRC_LOGO%" "%DST_DEBUG%\Contents\Resources\logo_strip.png" >nul
+if errorlevel 1 goto :done
+
+copy /Y "%SRC_UIDESC%" "%DST_RELEASE%\Contents\Resources\beat.uidesc" >nul
+if errorlevel 1 goto :done
+copy /Y "%SRC_LOGO%" "%DST_RELEASE%\Contents\Resources\logo_strip.png" >nul
+if errorlevel 1 goto :done
 
 if not exist "%DST_DEBUG%\Contents\x86_64-win\DebugBeat.vst3" (
   echo Debug deploy failed: missing %DST_DEBUG%\Contents\x86_64-win\DebugBeat.vst3

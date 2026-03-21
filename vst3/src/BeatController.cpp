@@ -4,19 +4,133 @@
 
 #include "BeatEngine.h"
 #include "pluginterfaces/base/ustring.h"
+#include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/plugin-bindings/vst3editor.h"
 #include "vstgui/uidescription/uidescription.h"
 #include "vstgui/lib/controls/cautoanimation.h"
+#include "vstgui/lib/controls/cbuttons.h"
 #include "base/source/fstreamer.h"
 #include <algorithm>
 #include <array>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <string>
 
 namespace beatvst {
 using namespace Steinberg;
 using namespace Steinberg::Vst;
+
+namespace {
+
+constexpr int32_t kBeatSelectButtonTagBase = 91;
+constexpr int32_t kBeatSelectButtonTagLast = kBeatSelectButtonTagBase + kMaxBeats - 1;
+
+bool isBeatSelectButtonTag(int32_t tag) {
+    return tag >= kBeatSelectButtonTagBase && tag <= kBeatSelectButtonTagLast;
+}
+
+int beatSelectLaneIndexForTag(int32_t tag) {
+    return isBeatSelectButtonTag(tag) ? static_cast<int>(tag - kBeatSelectButtonTagBase) : -1;
+}
+
+ParamValue beatSelectNormalizedForLane(int laneIndex) {
+    if (kMaxBeats <= 1) return 0.0;
+    const auto clampedLane = std::clamp(laneIndex, 0, kMaxBeats - 1);
+    return static_cast<ParamValue>(clampedLane) / static_cast<ParamValue>(kMaxBeats - 1);
+}
+
+int beatSelectLaneIndexFromNormalized(ParamValue norm) {
+    int beat = static_cast<int>(std::round(1.0 + norm * (kMaxBeats - 1)));
+    beat = std::clamp(beat, 1, kMaxBeats);
+    return beat - 1;
+}
+
+class BeatLaneSelectorController final : public VSTGUI::DelegationController {
+public:
+    BeatLaneSelectorController(VSTGUI::IController* baseController, BeatController& controller)
+        : DelegationController(baseController), controller_(controller) {}
+
+    ~BeatLaneSelectorController() override {
+        for (auto* button : laneButtons_) {
+            if (!button) continue;
+            if (button->getListener() == this) {
+                button->setListener(nullptr);
+            }
+            button->forget();
+        }
+    }
+
+    VSTGUI::CView* verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes,
+                              const VSTGUI::IUIDescription* description) override {
+        if (auto* button = dynamic_cast<VSTGUI::CTextButton*>(view)) {
+            const int laneIndex = beatSelectLaneIndexForTag(button->getTag());
+            if (laneIndex >= 0 && laneButtons_[laneIndex] == nullptr) {
+                button->setListener(this);
+                button->remember();
+                laneButtons_[laneIndex] = button;
+                syncButtonState(*button, laneIndex == selectedLaneIndex());
+            }
+        }
+        return DelegationController::verifyView(view, attributes, description);
+    }
+
+    void valueChanged(VSTGUI::CControl* pControl) override {
+        const int laneIndex = laneIndexForControl(pControl);
+        if (laneIndex < 0) {
+            DelegationController::valueChanged(pControl);
+            return;
+        }
+
+        syncButtons(laneIndex);
+        const ParamValue normalized = beatSelectNormalizedForLane(laneIndex);
+        controller_.setParamNormalized(ParamIDs::kParamBeatSelect, normalized);
+        controller_.performEdit(ParamIDs::kParamBeatSelect, controller_.getParamNormalized(ParamIDs::kParamBeatSelect));
+    }
+
+    void controlBeginEdit(VSTGUI::CControl* pControl) override {
+        if (laneIndexForControl(pControl) < 0) {
+            DelegationController::controlBeginEdit(pControl);
+            return;
+        }
+        controller_.beginEdit(ParamIDs::kParamBeatSelect);
+    }
+
+    void controlEndEdit(VSTGUI::CControl* pControl) override {
+        if (laneIndexForControl(pControl) < 0) {
+            DelegationController::controlEndEdit(pControl);
+            return;
+        }
+        controller_.endEdit(ParamIDs::kParamBeatSelect);
+    }
+
+private:
+    int laneIndexForControl(VSTGUI::CControl* control) const {
+        return control ? beatSelectLaneIndexForTag(control->getTag()) : -1;
+    }
+
+    int selectedLaneIndex() const {
+        return beatSelectLaneIndexFromNormalized(controller_.getParamNormalized(ParamIDs::kParamBeatSelect));
+    }
+
+    void syncButtonState(VSTGUI::CTextButton& button, bool selected) {
+        button.setValue(selected ? 1.f : 0.f);
+        button.invalid();
+    }
+
+    void syncButtons(int selectedIndex) {
+        for (int laneIndex = 0; laneIndex < kMaxBeats; ++laneIndex) {
+            auto* button = laneButtons_[laneIndex];
+            if (!button) continue;
+            syncButtonState(*button, laneIndex == selectedIndex);
+        }
+    }
+
+    BeatController& controller_;
+    std::array<VSTGUI::CTextButton*, kMaxBeats> laneButtons_ {};
+};
+
+} // namespace
 
 tresult PLUGIN_API BeatController::initialize(FUnknown* context) {
     tresult res = EditControllerEx1::initialize(context);
@@ -106,6 +220,14 @@ IPlugView* PLUGIN_API BeatController::createView(FIDString name) {
     return EditControllerEx1::createView(name);
 }
 
+VSTGUI::IController* BeatController::createSubController(VSTGUI::UTF8StringPtr name, const VSTGUI::IUIDescription* description,
+                                                         VSTGUI::VST3Editor* editor) {
+    if (name && std::strcmp(name, "BeatLaneSelector") == 0) {
+        return new BeatLaneSelectorController(editor, *this);
+    }
+    return VSTGUI::VST3EditorDelegate::createSubController(name, description, editor);
+}
+
 VSTGUI::CView* BeatController::verifyView(VSTGUI::CView* view, const VSTGUI::UIAttributes& attributes,
                                           const VSTGUI::IUIDescription* description, VSTGUI::VST3Editor* editor) {
     auto* autoAnim = dynamic_cast<VSTGUI::CAutoAnimation*>(view);
@@ -113,6 +235,33 @@ VSTGUI::CView* BeatController::verifyView(VSTGUI::CView* view, const VSTGUI::UIA
         autoAnim->openWindow();
     }
     return view;
+}
+
+void BeatController::didOpen(VSTGUI::VST3Editor* editor) {
+    if (autoExposed_) return;
+    exposeAutomatableParams();
+    autoExposed_ = true;
+}
+
+void BeatController::exposeAutomatableParams() {
+    if (!componentHandler) return;
+    const int32 count = parameters.getParameterCount();
+    for (int32 i = 0; i < count; ++i) {
+        auto* param = parameters.getParameterByIndex(i);
+        if (!param) continue;
+        const auto flags = param->getInfo().flags;
+        if (flags & ParameterInfo::kIsHidden) continue;
+        if (flags & ParameterInfo::kIsReadOnly) continue;
+        const ParamID pid = param->getInfo().id;
+        const ParamValue value = getParamNormalized(pid);
+        ParamValue nudge = value + 1e-5;
+        if (nudge > 1.0) nudge = value - 1e-5;
+        if (nudge < 0.0) nudge = value;
+        beginEdit(pid);
+        performEdit(pid, nudge);
+        performEdit(pid, value);
+        endEdit(pid);
+    }
 }
 
 tresult PLUGIN_API BeatController::getState(IBStream* state) {
@@ -200,6 +349,25 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
         }
         return res;
     }
+    if (pid >= kParamBaseBeatParams && pid < kActiveParamBase) {
+        if (!syncingActive_) {
+            const int rel = static_cast<int>(pid - kParamBaseBeatParams);
+            const int beatIndex = rel / kPerBeatParams;
+            const int slot = rel % kPerBeatParams;
+            if (beatIndex == selectedBeatIndex()) {
+                const ParamID activeId = activeParamId(static_cast<ActiveParamSlot>(slot));
+                syncingActive_ = true;
+                EditControllerEx1::setParamNormalized(activeId, value);
+                if (componentHandler) {
+                    componentHandler->beginEdit(activeId);
+                    componentHandler->performEdit(activeId, value);
+                    componentHandler->endEdit(activeId);
+                }
+                syncingActive_ = false;
+            }
+        }
+        return res;
+    }
     if (pid >= kLaneSoloBase && pid < kLaneActivityBase) {
         syncGlobalSolo();
         return res;
@@ -210,6 +378,15 @@ tresult PLUGIN_API BeatController::setParamNormalized(ParamID pid, ParamValue va
         performEdit(ParamIDs::kParamReset, 0.0);
         endEdit(ParamIDs::kParamReset);
         EditControllerEx1::setParamNormalized(ParamIDs::kParamReset, 0.0);
+    }
+    return res;
+}
+
+tresult PLUGIN_API BeatController::setComponentHandler(IComponentHandler* handler) {
+    tresult res = EditControllerEx1::setComponentHandler(handler);
+    if (res == kResultOk && handler && !autoExposed_) {
+        exposeAutomatableParams();
+        autoExposed_ = true;
     }
     return res;
 }
@@ -417,10 +594,7 @@ void BeatController::syncActiveParams() {
 }
 
 int BeatController::selectedBeatIndex() {
-    const ParamValue norm = getParamNormalized(ParamIDs::kParamBeatSelect);
-    int beat = static_cast<int>(std::round(1.0 + norm * (kMaxBeats - 1)));
-    beat = std::max(1, std::min(kMaxBeats, beat));
-    return beat - 1;
+    return beatSelectLaneIndexFromNormalized(getParamNormalized(ParamIDs::kParamBeatSelect));
 }
 
 } // namespace beatvst
