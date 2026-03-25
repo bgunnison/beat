@@ -40,8 +40,16 @@ This installs:
 - `C:\ProgramData\vstplugins\DebugBeat.vst3`
 - `C:\ProgramData\vstplugins\Beat.vst3`
 
-`deploy.bat` also copies the current UI resources from `vst3\beat.uidesc` and `vst3\logo_strip.png` into both installed bundles, so UI layout edits are picked up on deploy.
-It also creates `Beat.vst3.zip` in the repo root from the finalized Release bundle.
+`deploy.bat` copies the built Debug and Release bundles into `C:\ProgramData\vstplugins`.
+
+## Release Zip
+Use:
+
+```bat
+release.bat
+```
+
+This creates `BEAT.vst3.zip` in the repo root from `build\VST3\Release\Beat.vst3`.
 
 ## Use In Ableton Live
 1. Add `VirtualRobot / Beat` to a MIDI track.
