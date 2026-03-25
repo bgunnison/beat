@@ -4,7 +4,7 @@ setlocal
 set ROOT=%~dp0
 
 set SRC_RELEASE=%ROOT%build\VST3\Release\Beat.vst3
-set ZIP_RELEASE=%ROOT%BEAT.vst3.zip
+set ZIP_RELEASE=%ROOT%Beat.vst3.zip
 
 if not exist "%SRC_RELEASE%" (
   echo Missing Release build at: %SRC_RELEASE%
